@@ -22,12 +22,12 @@ public class View extends JFrame implements ActionListener, Runnable {
         System.out.println("view.MyView creado");
         this.controller = controller;
 
+        createFrame();
+        setupListeners();
+
         //Thread en bucle para el estado de la QTT del Resource
         updateThread = new Thread(this);
         updateThread.start();
-
-        createFrame();
-        setupListeners();
     }
 
     private void createFrame() {
@@ -149,9 +149,12 @@ public class View extends JFrame implements ActionListener, Runnable {
                 Object[] newData = controller.getUpdatedData();  // Método ficticio que obtiene los datos
 
                 // Actualizar la tabla en el hilo de la interfaz gráfica
-                SwingUtilities.invokeLater(() -> {
-                    dataPanel.addRow(newData);  // Añadir una nueva fila a la tabla
-                });
+                if (newData != null) {
+                    SwingUtilities.invokeLater(() -> {
+                        dataPanel.addRow(newData);  // Añadir una nueva fila a la tabla
+                    });
+                }
+
 
                 System.out.println("bucle en marcha");
 
