@@ -1,43 +1,32 @@
 package model;
 
 public class ResourceType {
-    private Integer maxQuantity;
-    private Integer minQuantity;
-    private Integer quantity;
+    private int quantity;
+    private final int minLimit;
+    private final int maxLimit;
 
-    public ResourceType() {
-        quantity = 0;
+    public ResourceType(int minLimit, int maxLimit) {
+        this.minLimit = minLimit;
+        this.maxLimit = maxLimit;
+        this.quantity = minLimit; // Inicializa en el límite mínimo
     }
 
-    public void addResources(){
-        quantity++;
+    public synchronized void addResources() {
+        if (quantity < maxLimit) {
+            quantity++;
+        }
     }
 
-    public void removeResource(){
-        quantity--;
+    public synchronized boolean consumeResource() {
+        if (quantity > minLimit) {
+            quantity--;
+            return true;
+        }
+        return false;
     }
 
-    public Integer getMaxQuantity() {
-        return maxQuantity;
-    }
-
-    public void setMaxQuantity(Integer maxQuantity) {
-        this.maxQuantity = maxQuantity;
-    }
-
-    public Integer getMinQuantity() {
-        return minQuantity;
-    }
-
-    public void setMinQuantity(Integer minQuantity) {
-        this.minQuantity = minQuantity;
-    }
-
-    public Integer getQuantity() {
+    public synchronized int getQuantity() {
         return quantity;
     }
-
-    public void setQuantity(Integer quantity) {
-        this.quantity = quantity;
-    }
 }
+

@@ -2,43 +2,68 @@ package view;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 
-public class DataPanel {
-    private JTable dataTable;
-    private JScrollPane dataScroll;
-    private Object[][] data;
-    private DefaultTableModel tableModel;
+public class DataPanel extends JPanel {
+    private JTable table;
+    private DefaultTableModel model;
 
     public DataPanel() {
-        String[] columnNames = {"Valor"};
+        setLayout(new BorderLayout());
 
-        // Inicializar el modelo con las columnas y datos iniciales
-        tableModel = new DefaultTableModel(columnNames, 0); // 0 filas iniciales
+        // Columnas de la tabla
+        String[] columnNames = {"Data", "Value"};
 
-        // Configurar la JTable con el modelo
-        dataTable = new JTable(tableModel);
+        // Datos iniciales
+        Object[][] data = {
+                {"Total Resources", 0},
+                {"Total Producers", 0},
+                {"Total Consumers", 0},
+                {"Total resource quantity", 0},
+                {"Active Threads", 0},
+                {"Total Processing time ...", 0},
+                {"IDLE Threads", 0}
+        };
+
+        // Modelo de la tabla
+        model = new DefaultTableModel(data, columnNames) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Ninguna celda es editable
+            }
+        };
+
+        // Crear la JTable
+        table = new JTable(model);
+        table.setRowHeight(25);
+        table.getColumnModel().getColumn(0).setPreferredWidth(200);
+        table.getColumnModel().getColumn(1).setPreferredWidth(100);
+
+        // Estilo de cabecera
+        table.getTableHeader().setReorderingAllowed(false);
+        table.getTableHeader().setResizingAllowed(false);
 
         // Agregar la tabla a un JScrollPane
-        dataScroll = new JScrollPane(dataTable);
+        JScrollPane scrollPane = new JScrollPane(table);
+        add(scrollPane, BorderLayout.CENTER);
     }
 
-    public JTable getDataTable() {
-        return dataTable;
+    public void updateData(int row, Object value) {
+        model.setValueAt(value, row, 1);
     }
-
-    public void setDataTable(JTable dataTable) {
-        this.dataTable = dataTable;
-    }
-
     public JScrollPane getDataScroll() {
-        return dataScroll;
+        return (JScrollPane) this.getComponent(0);
     }
 
-    public void setDataScroll(JScrollPane dataScroll) {
-        this.dataScroll = dataScroll;
+    public void updateValues(Object[] newValues) {
+        if (newValues.length != model.getRowCount()) {
+            throw new IllegalArgumentException("El tamaño de los datos no coincide con las filas de la tabla.");
+        }
+
+        for (int i = 0; i < newValues.length; i++) {
+            model.setValueAt(newValues[i], i, 1);
+        }
     }
 
-    public void addRow(Object[] rowData) {
-        tableModel.addRow(rowData);
-    }
+
 }

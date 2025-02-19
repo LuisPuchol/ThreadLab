@@ -1,47 +1,41 @@
 package model;
 
-public class Producer implements Runnable {
-    private volatile boolean running = false;
-    private Integer iteraciones = 10000;
+import java.util.Random;
+
+import java.util.Random;
+
+public class Producer extends Thread {
     private Model model;
     private ResourceType resourceType;
+    private int delay;
+    private int startDelay;
+    private Random random = new Random();
 
-    private Enum state;//running ended
-    private int startTime;//no es int, algo para medir nanosegs
-
-    public Producer(Model model, ResourceType resourceType) {
-        this.model = model; // Asignar el modelo
+    public Producer(Model model, ResourceType resourceType, int delay, int startDelay) {
+        this.model = model;
         this.resourceType = resourceType;
+        this.delay = delay;
+        this.startDelay = startDelay;
     }
 
-    //Suma desde X
     @Override
     public void run() {
-        running = true;
-        int cycles = 0; // You can adjust this value as needed
+        try {
+            Thread.sleep(startDelay); // Delay inicial
+        } catch (InterruptedException e) {
+            return;
+        }
 
-        while(running && cycles < iteraciones){
-            for (int i = 0; i < iteraciones; i++) {
+        while (!isInterrupted()) {
+            try {
+                Thread.sleep(delay);
                 resourceType.addResources();
-                try {
-                    Thread.sleep(1);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                cycles++;
+                System.out.println("Producer produjo 1 unidad. Total: " + resourceType.getQuantity());
+            } catch (InterruptedException e) {
+                System.out.println("Producer detenido.");
+                return; // Salir del hilo si se interrumpe
             }
         }
     }
 
-    public void produce() {
-
-    }
-
-    public boolean isRunning() {
-        return running;
-    }
-
-    public void stop() {
-        running = false;
-    }
 }

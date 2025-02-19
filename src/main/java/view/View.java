@@ -9,7 +9,6 @@ import java.awt.event.ActionListener;
 
 public class View extends JFrame implements ActionListener, Runnable {
     private ControlPanel controlPanel;
-    //private Viewer viewers;
     private Controller controller;
     private DataPanel dataPanel;
     private ConfigurationPanel configurationPanel;
@@ -143,18 +142,17 @@ public class View extends JFrame implements ActionListener, Runnable {
 
     @Override
     public void run() {
-        while (true) {  // Bucle infinito
+        while (true) {
             try {
                 // Obtener la información actualizada
-                Object[] newData = controller.getUpdatedData();  // Método ficticio que obtiene los datos
+                Object[] updatedData  = controller.getCurrentData();
 
                 // Actualizar la tabla en el hilo de la interfaz gráfica
-                if (newData != null) {
+                if (updatedData != null) {
                     SwingUtilities.invokeLater(() -> {
-                        dataPanel.addRow(newData);  // Añadir una nueva fila a la tabla
+                        dataPanel.updateValues(updatedData);  // Sobrescribir la segunda columna
                     });
                 }
-
 
                 System.out.println("bucle en marcha");
 
@@ -165,5 +163,9 @@ public class View extends JFrame implements ActionListener, Runnable {
                 break;  // Salir del bucle si el hilo es interrumpido
             }
         }
+    }
+
+    public ConfigurationPanel getConfigurationPanel() {
+        return configurationPanel;
     }
 }

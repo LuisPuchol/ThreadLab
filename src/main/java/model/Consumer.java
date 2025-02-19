@@ -1,47 +1,45 @@
 package model;
 
-public class Consumer implements Runnable {
-    private volatile boolean running = false;
-    private Integer iteraciones = 10000;
+import java.util.Random;
+
+public class Consumer extends Thread {
     private Model model;
     private ResourceType resourceType;
+    private int delay;
+    private int startDelay;
+    private Random random = new Random();
 
-    private Enum state;//running ended
-    private int startTime;//no es int, algo para medir nanosegs
-
-    public Consumer(Model model, ResourceType resourceType) {
-        this.model = model; // Asignar el modelo
+    public Consumer(Model model, ResourceType resourceType, int delay, int startDelay) {
+        this.model = model;
         this.resourceType = resourceType;
+        this.delay = delay;
+        this.startDelay = startDelay;
     }
 
-    //Resta desde X
     @Override
     public void run() {
-        running = true;
-        int cycles = 0;
-        while(running && cycles < iteraciones){
-            for (int i = 0; i < iteraciones; i++) {
-                resourceType.removeResource();
-                try {
-                    Thread.sleep(1);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+        try {
+            Thread.sleep(startDelay); // Delay inicial
+        } catch (InterruptedException e) {
+            return;
+        }
+
+        while (!isInterrupted()) {
+            try {
+                Thread.sleep(delay);
+                if (resourceType.consumeResource()) {
+                    System.out.println("Consumer consumió 1 unidad. Total: " + resourceType.getQuantity());
+                } else {
+                    System.out.println("Consumer intentó consumir, pero no hay recursos disponibles.");
                 }
-                cycles++;
+            } catch (InterruptedException e) {
+                System.out.println("Consumer detenido.");
+                return; // Salir del hilo si se interrumpe
             }
         }
     }
 
-    public void consume() {
-
-    }
-
-    public boolean isRunning() {
-        return running;
-    }
-
-    public void stop() {
-        running = false;
-    }
-
 }
+
+
+

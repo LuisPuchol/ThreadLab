@@ -2,129 +2,142 @@ package model;
 
 import controller.Controller;
 
-import java.awt.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class Model {
-    private Producer producer;
-    private Consumer consumer;
-    private ResourceType resourceType;
-    private Enum state; //play ended stopped
-    private Integer counter;
-    private Thread producerThread; // Hilo para el Producer
-    private Thread consumerThread; // Hilo para el Consumer
-    private ArrayList<Consumer> consumersList;
-    private ArrayList<Producer> producersList;
-    private ArrayList<ResourceType> resourceTypeList;
-    private int consumerDelayMin;
-    private int consumerDelayMax;
+    private Controller controller;
+    private List<Producer> producers;
+    private List<Consumer> consumers;
+    private List<ResourceType> resourceTypes; // Lista de ResourceType según totalResources
+
+    private int totalResources;
+    private int maxGeneralResources;
+    private int minGeneralResources;
+    private int numberOfProducers;
+    private int numberOfConsumers;
+    private int startDelayMin;
+    private int startDelayMax;
     private int producerDelayMin;
     private int producerDelayMax;
-    private int startProducerDelayMin;
-    private int startProducerDelayMax;
-    private int startConsumerDelayMin;
-    private int startConsumerDelayMax;
+    private int consumerDelayMin;
+    private int consumerDelayMax;
+
+    private Random random = new Random();
 
     public Model(Controller controller) {
-        System.out.println("MyModel creado");
-        //counter = 0;
-        consumerDelayMin = 1;
-        consumerDelayMax = 10;
-        producerDelayMin = 0;
-        producerDelayMax = 10;
-        startProducerDelayMin = 1;
-        startProducerDelayMax = 10;
-        startConsumerDelayMin = 1;
-        startConsumerDelayMax = 10;
-
-        this.resourceTypeList = new ArrayList<>();
-        this.producersList = new ArrayList<>();
-        this.consumersList = new ArrayList<>();
-
+        this.controller = controller;
+        producers = new ArrayList<>();
+        consumers = new ArrayList<>();
+        resourceTypes = new ArrayList<>();
     }
 
-    public void getConsumerInfo() {
-
+    /**
+     * Configura el modelo basándose en los valores del DTO.
+     */
+    public void applyConfiguration(ConfigurationPropertiesDTO configDTO) {
+        this.totalResources = configDTO.getTotalResources();
+        this.maxGeneralResources = configDTO.getMaxGeneralResources();
+        this.minGeneralResources = configDTO.getMinGeneralResources();
+        this.numberOfProducers = configDTO.getNumberOfProducers();
+        this.numberOfConsumers = configDTO.getNumberOfConsumers();
+        this.startDelayMin = configDTO.getStartDelayMin();
+        this.startDelayMax = configDTO.getStartDelayMax();
+        this.producerDelayMin = configDTO.getProducerDelayMin();
+        this.producerDelayMax = configDTO.getProducerDelayMax();
+        this.consumerDelayMin = configDTO.getConsumerDelayMin();
+        this.consumerDelayMax = configDTO.getConsumerDelayMax();
     }
 
-    public void getProducerInfo() {
-
-    }
-
-    public void getResourceInfo() {
-
-    }
-
+    /**
+     * Inicializa los recursos compartidos y crea los hilos de productores y consumidores.
+     */
     public void play() {
-        this.resourceType = new ResourceType();
-        this.producer = new Producer(this, resourceType);
-        this.consumer = new Consumer(this, resourceType);
+        resourceTypes.clear();
+        producers.clear();
+        consumers.clear();
 
-        resourceTypeList.add(resourceType);
-        producersList.add(producer);
-        consumersList.add(consumer);
-
-        producerThread = new Thread(producer);
-        consumerThread = new Thread(consumer);
-
-        producerThread.start();
-        consumerThread.start();
-
-        try {
-            producerThread.join();
-            consumerThread.join();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            System.err.println("Error al esperar los hilos: " + e.getMessage());
+        // Crear los ResourceType según totalResources
+        for (int i = 0; i < totalResources; i++) {
+            resourceTypes.add(new ResourceType(minGeneralResources, maxGeneralResources));
         }
 
-        // Print confirmando que finalizan
-        System.out.println("Producer y Consumer han terminado");
-        System.out.println(resourceType.getQuantity());
+        // Calcular delays promediados al crear cada productor y consumidor
+        int avgProducerDelay = (producerDelayMin + producerDelayMax) / 2;
+        int avgConsumerDelay = (consumerDelayMin + consumerDelayMax) / 2;
+
+        // Crear y lanzar productores con un delay inicial aleatorio
+        for (int i = 0; i < numberOfProducers; i++) {
+            ResourceType assignedResource = resourceTypes.get(random.nextInt(resourceTypes.size()));
+            int startDelay = startDelayMin + random.nextInt(startDelayMax - startDelayMin + 1);
+            Producer producer = new Producer(this, assignedResource, avgProducerDelay, startDelay);
+            producers.add(producer);
+            producer.start();
+        }
+
+        // Crear y lanzar consumidores con un delay inicial aleatorio
+        for (int i = 0; i < numberOfConsumers; i++) {
+            ResourceType assignedResource = resourceTypes.get(random.nextInt(resourceTypes.size()));
+            int startDelay = startDelayMin + random.nextInt(startDelayMax - startDelayMin + 1);
+            Consumer consumer = new Consumer(this, assignedResource, avgConsumerDelay, startDelay);
+            consumers.add(consumer);
+            consumer.start();
+        }
+    }
+
+    /**
+     * Devuelve el estado actual del modelo para la vista.
+     */
+    public Object[] getCurrentData() {
+        return new Object[]{
+                totalResources,
+                numberOfProducers,
+                numberOfConsumers,
+                getTotalResourceQuantity(),
+                getActiveThreads(),
+                getProcessingTime(),
+                getIdleThreads()
+        };
     }
 
     public void stop() {
-        consumer.stop();
-        producer.stop();
+        System.out.println("Deteniendo todos los procesos...");
+
+        // Interrumpir todos los productores
+        for (Producer producer : producers) {
+            producer.interrupt();
+        }
+
+        // Interrumpir todos los consumidores
+        for (Consumer consumer : consumers) {
+            consumer.interrupt();
+        }
+
+        // Limpiar listas
+        producers.clear();
+        consumers.clear();
+
+        System.out.println("Todos los procesos han sido detenidos.");
     }
 
 
-    public Producer getProducer() {
-        return producer;
+    /**
+     * Métodos auxiliares para obtener estadísticas.
+     */
+    public int getTotalResourceQuantity() {
+        return resourceTypes.stream().mapToInt(ResourceType::getQuantity).sum();
     }
 
-    public void setProducer(Producer producer) {
-        this.producer = producer;
+    public int getActiveThreads() {
+        return (int) (Thread.activeCount() - 1);
     }
 
-    public Consumer getConsumer() {
-        return consumer;
+    public int getProcessingTime() {
+        return 0; // Se puede implementar posteriormente
     }
 
-    public void setConsumer(Consumer consumer) {
-        this.consumer = consumer;
-    }
-
-    public Integer getCounter() {
-        return counter;
-    }
-
-    public void setCounter(Integer counter) {
-        this.counter = counter;
-    }
-
-    public ResourceType getResourceType() {
-        return resourceType;
-    }
-
-    public void setResourceType(ResourceType resourceType) {
-        this.resourceType = resourceType;
-    }
-
-    Random random = new Random();
-
-    public Color generateRandomColor() {
-        return new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256));
+    public int getIdleThreads() {
+        return numberOfProducers + numberOfConsumers - getActiveThreads();
     }
 }
