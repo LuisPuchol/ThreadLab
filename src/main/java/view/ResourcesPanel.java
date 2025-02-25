@@ -10,59 +10,34 @@ public class ResourcesPanel {
     private Object[][] data;
     private DefaultTableModel tableModel;
 
+    /**
+     * Constructor que inicializa la tabla de recursos y su modelo de datos.
+     */
     public ResourcesPanel() {
-        // Definir las columnas de la tabla
         String[] columnNames = {
                 "Resource ID", "Current QTY", "Min QTY", "Max QTY",
                 "Producers", "Consumers", "Underflow Count", "Overflow Count"
         };
-
-        // Inicializar el modelo de la tabla con 0 filas iniciales
         tableModel = new DefaultTableModel(columnNames, 0);
-
-        // Configurar la JTable con el modelo
         dataTable = new JTable(tableModel);
-
-        // Agregar la tabla a un JScrollPane
         dataScroll = new JScrollPane(dataTable);
     }
 
+    /**
+     * Actualiza la tabla con la información de los recursos.
+     *
+     * @param resourceData Lista de datos de los recursos a mostrar en la tabla.
+     */
     public void updateTable(List<Integer[]> resourceData) {
-        tableModel.setRowCount(0); // Limpiar la tabla antes de actualizarla
+        tableModel.setRowCount(0);
         for (Integer[] data : resourceData) {
-            tableModel.addRow(data); // Agregar cada recurso como una fila
+            tableModel.addRow(data);
         }
     }
 
-    public JTable getDataTable() {
-        return dataTable;
-    }
-
-    public void setDataTable(JTable dataTable) {
-        this.dataTable = dataTable;
-    }
 
     public JScrollPane getDataScroll() {
         return dataScroll;
     }
 
-    public void setDataScroll(JScrollPane dataScroll) {
-        this.dataScroll = dataScroll;
-    }
-
-    public Object[][] getData() {
-        return data;
-    }
-
-    public void setData(Object[][] data) {
-        this.data = data;
-    }
-
-    public DefaultTableModel getTableModel() {
-        return tableModel;
-    }
-
-    public void setTableModel(DefaultTableModel tableModel) {
-        this.tableModel = tableModel;
-    }
 }

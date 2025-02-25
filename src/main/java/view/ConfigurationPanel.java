@@ -13,8 +13,15 @@ public class ConfigurationPanel extends JPanel {
 
     public ConfigurationPanel() {
         setLayout(new BorderLayout());
+        initializeTable();
+        configureTable();
+        add(scrollPane, BorderLayout.CENTER);
+    }
 
-        // Datos iniciales de la tabla
+    /**
+     * Inicializa la tabla de configuración con los parámetros predeterminados.
+     */
+    private void initializeTable() {
         Object[][] data = {
                 {".Resource Type Settings", "---"},
                 {"Total Resources", 5},
@@ -34,33 +41,109 @@ public class ConfigurationPanel extends JPanel {
                 {"Consumer Delay Max", 100}
         };
 
-        // Columnas de la tabla
         String[] columnNames = {"Parameter", "Value"};
 
-        // Modelo de la tabla
         model = new DefaultTableModel(data, columnNames) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 1; // Solo la columna "Value" es editable
+                return column == 1; //Editable solo la columna de la izquierda
             }
         };
+    }
 
-        // Crear la JTable
+    /**
+     * Configura la tabla y su presentación visual dentro de un JScrollPane.
+     */
+    private void configureTable() {
         JTable table = new JTable(model);
         table.setRowHeight(25);
         table.getColumnModel().getColumn(0).setPreferredWidth(300);
         table.getColumnModel().getColumn(1).setPreferredWidth(100);
-
-        // Agregar la tabla a un JScrollPane
         scrollPane = new JScrollPane(table);
-        add(scrollPane, BorderLayout.CENTER);
     }
 
     public JScrollPane getConfigurationScroll() {
         return scrollPane;
     }
 
+    /**
+     * Convierte los valores de la tabla en un objeto {@link ConfigurationPropertiesDTO}.
+     * Solo se consideran las filas que representan configuraciones numéricas válidas.
+     *
+     * @return Un objeto {@link ConfigurationPropertiesDTO} con los valores extraídos de la tabla.
+     */
     public ConfigurationPropertiesDTO toConfigurationPropertiesDTO() {
+        ConfigurationPropertiesDTO configDTO = new ConfigurationPropertiesDTO();
+
+        for (int i = 0; i < model.getRowCount(); i++) {
+            String key = getParameterName(i);
+            Integer value = getParameterValue(i);
+
+            if (key == null || value == null) continue;
+
+            mapValueToDTO(configDTO, key, value);
+        }
+
+        return configDTO;
+    }
+
+    /**
+     * Obtiene el nombre del parámetro de la fila especificada.
+     *
+     * @param row Índice de la fila en la tabla.
+     * @return Nombre del parámetro o null si es un encabezado.
+     */
+    private String getParameterName(int row) {
+        String key = (String) model.getValueAt(row, 0);
+        return (key != null && !key.startsWith(".")) ? key : null;
+    }
+
+    /**
+     * Obtiene el valor numérico de la fila especificada.
+     *
+     * @param row Índice de la fila en la tabla.
+     * @return El valor convertido a Integer o null si es inválido.
+     */
+    private Integer getParameterValue(int row) {
+        Object valueObj = model.getValueAt(row, 1);
+        if (valueObj == null) return null;
+
+        String valueStr = valueObj.toString().trim();
+        if (valueStr.isEmpty()) return null;
+
+        try {
+            return Integer.parseInt(valueStr);
+        } catch (NumberFormatException e) {
+            System.err.println("Error: Valor no numérico en " + valueStr);
+            return null;
+        }
+    }
+
+    /**
+     * Asigna un valor extraído de la tabla a la propiedad correspondiente en {@link ConfigurationPropertiesDTO}.
+     *
+     * @param configDTO Objeto de configuración donde se almacenarán los valores.
+     * @param key Nombre del parámetro.
+     * @param value Valor numérico asociado al parámetro.
+     */
+    private void mapValueToDTO(ConfigurationPropertiesDTO configDTO, String key, int value) {
+        switch (key) {
+            case "Total Resources" -> configDTO.setTotalResources(value);
+            case "Min General Resources" -> configDTO.setMinGeneralResources(value);
+            case "Max General Resources" -> configDTO.setMaxGeneralResources(value);
+            case "Number of Producers" -> configDTO.setNumberOfProducers(value);
+            case "Number of Consumers" -> configDTO.setNumberOfConsumers(value);
+            case "Start Delay Min (ms)" -> configDTO.setStartDelayMin(value);
+            case "Start Delay Max (ms)" -> configDTO.setStartDelayMax(value);
+            case "Producer Delay Min" -> configDTO.setProducerDelayMin(value);
+            case "Producer Delay Max" -> configDTO.setProducerDelayMax(value);
+            case "Consumer Delay Min" -> configDTO.setConsumerDelayMin(value);
+            case "Consumer Delay Max" -> configDTO.setConsumerDelayMax(value);
+        }
+    }
+
+    /*
+        public ConfigurationPropertiesDTO toConfigurationPropertiesDTO() {
         ConfigurationPropertiesDTO configDTO = new ConfigurationPropertiesDTO();
 
         for (int i = 0; i < model.getRowCount(); i++) {
@@ -130,6 +213,7 @@ public class ConfigurationPanel extends JPanel {
 
         return configDTO;
     }
+     */
 
 
 }

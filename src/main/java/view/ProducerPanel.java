@@ -2,6 +2,7 @@ package view;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.util.List;
 
 public class ProducerPanel {
     private JTable dataTable;
@@ -9,48 +10,33 @@ public class ProducerPanel {
     private Object[][] data;
     private DefaultTableModel tableModel;
 
+    /**
+     * Constructor que inicializa la tabla de productores y su modelo de datos.
+     */
     public ProducerPanel() {
-        String[] columnNames = {"Atributo","Valor"};
-
-        // Inicializar el modelo con las columnas y datos iniciales
-        tableModel = new DefaultTableModel(columnNames, 0); // 0 filas iniciales
-
-        // Configurar la JTable con el modelo
+        String[] columnNames = {
+                "Thread ID", "Bound Resource", "Start Delay", "Delay", "Times",
+                "Processing Time", "Start Time", "End Time"
+        };
+        tableModel = new DefaultTableModel(columnNames, 0);
         dataTable = new JTable(tableModel);
-
-        // Agregar la tabla a un JScrollPane
         dataScroll = new JScrollPane(dataTable);
     }
 
-    public JTable getDataTable() {
-        return dataTable;
-    }
-
-    public void setDataTable(JTable dataTable) {
-        this.dataTable = dataTable;
+    /**
+     * Actualiza la tabla con la información de los productores.
+     *
+     * @param producerData Lista de datos de los productores a mostrar en la tabla.
+     */
+    public void updateTable(List<Integer[]> producerData) {
+        tableModel.setRowCount(0);
+        for (Integer[] data : producerData) {
+            tableModel.addRow(data);
+        }
     }
 
     public JScrollPane getDataScroll() {
         return dataScroll;
     }
 
-    public void setDataScroll(JScrollPane dataScroll) {
-        this.dataScroll = dataScroll;
-    }
-
-    public Object[][] getData() {
-        return data;
-    }
-
-    public void setData(Object[][] data) {
-        this.data = data;
-    }
-
-    public DefaultTableModel getTableModel() {
-        return tableModel;
-    }
-
-    public void setTableModel(DefaultTableModel tableModel) {
-        this.tableModel = tableModel;
-    }
 }

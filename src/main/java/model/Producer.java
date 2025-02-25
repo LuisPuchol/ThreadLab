@@ -4,37 +4,84 @@ import java.util.Random;
 
 import java.util.Random;
 
+import java.time.LocalTime;
+import java.util.Random;
+
 public class Producer extends Thread {
+    private static int idCounter = 1;
+    private int id;
     private Model model;
     private ResourceType resourceType;
-    private int delay;
+    private int produceDelay;
     private int startDelay;
-    private Random random = new Random();
+    private int timesProduced;
+    private long processingTime;
+    private LocalTime startTime;
+    private LocalTime endTime;
+    private ThreadState state;
 
-    public Producer(Model model, ResourceType resourceType, int delay, int startDelay) {
+    public Producer(Model model, ResourceType resourceType, int produceDelay, int startDelay) {
+        this.id = idCounter++;
         this.model = model;
         this.resourceType = resourceType;
-        this.delay = delay;
+        this.produceDelay = produceDelay;
         this.startDelay = startDelay;
+        this.timesProduced = 0;
+        this.processingTime = 0;
+        this.state = ThreadState.IDLE;
     }
 
     @Override
     public void run() {
         try {
-            Thread.sleep(startDelay); // Delay inicial
-        } catch (InterruptedException e) {
-            return;
-        }
+            startTime = LocalTime.now();
+            Thread.sleep(startDelay);
+            long startProcessing = System.currentTimeMillis();
+            state = ThreadState.RUNNING;
 
-        while (!isInterrupted()) {
-            try {
-                Thread.sleep(delay);
+            while (state != ThreadState.STOPPED) {
+                synchronized (this) {
+                    while (state == ThreadState.PAUSED) {
+                        wait();
+                    }
+                }
+
+                if(state == ThreadState.STOPPED) break;
+
+
+                Thread.sleep(produceDelay);
                 resourceType.addResource();
-            } catch (InterruptedException e) {
-                System.out.println("Producer detenido.");
-                return; // Salir del hilo si se interrumpe
+                timesProduced++;
+                processingTime = System.currentTimeMillis() - startProcessing;
             }
+
+            endTime = LocalTime.now();
+        } catch (InterruptedException e) {
+            state = ThreadState.STOPPED;
         }
     }
 
+    public synchronized void setState(ThreadState newState) {
+        this.state = newState;
+        notifyAll();
+    }
+
+
+    public synchronized ThreadState getThreadState() {
+        return state;
+    }
+
+    public Integer[] getProducerInfo() {
+        return new Integer[]{
+                id,
+                resourceType.getResourceID(),
+                startDelay,
+                produceDelay,
+                timesProduced,
+                (int) processingTime,
+                startTime.getHour() * 10000 + startTime.getMinute() * 100 + startTime.getSecond(),
+                (endTime != null) ? (endTime.getHour() * 10000 + endTime.getMinute() * 100 + endTime.getSecond()) : 0
+        };
+    }
 }
+

@@ -2,14 +2,10 @@ package controller;
 
 import model.ConfigurationPropertiesDTO;
 import model.Model;
-import model.ResourceType;
 import view.View;
 
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-import java.awt.*;
 
 public class Controller {
     private Model model;
@@ -21,23 +17,31 @@ public class Controller {
         this.view = new View(this);
     }
 
-    public void handleCounterButton() {
+    public void handlePlayButton() {
         ConfigurationPropertiesDTO configDTO = view.getConfigurationPanel().toConfigurationPropertiesDTO();
         model.applyConfiguration(configDTO);
         model.play();
     }
 
     public List<Integer[]> getResourcesData() {
-        return model.getResourceTypeInfo();
+        return model.getResourceTypeData();
+    }
+
+    public List<Integer[]> getConsumerData() {
+        return model.getConsumerData();
+    }
+
+    public List<Integer[]> getProducerData() {
+        return model.getProducerData();
     }
 
 
-    public void handleCancelButton() {
+    public void handleStopButton() {
         model.stop();
     }
 
-    public int returnCounter() {
-        return 1; //model.getCounter();
+    public void handlePauseButton() {
+        model.pause();
     }
 
     public Object[] getCurrentData() {

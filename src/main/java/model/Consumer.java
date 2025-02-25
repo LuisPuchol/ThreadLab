@@ -1,41 +1,84 @@
 package model;
 
-import java.util.Random;
+import java.time.LocalTime;
 
 public class Consumer extends Thread {
+    private static int idCounter = 1;
+    private int id;
     private Model model;
     private ResourceType resourceType;
-    private int delay;
+    private int consumeDelay;
     private int startDelay;
-    private Random random = new Random();
+    private int timesConsumed;
+    private long processingTime;
+    private LocalTime startTime;
+    private LocalTime endTime;
+    private ThreadState state;
 
-    public Consumer(Model model, ResourceType resourceType, int delay, int startDelay) {
+    public Consumer(Model model, ResourceType resourceType, int consumeDelay, int startDelay) {
+        this.id = idCounter++;
         this.model = model;
         this.resourceType = resourceType;
-        this.delay = delay;
+        this.consumeDelay = consumeDelay;
         this.startDelay = startDelay;
+        this.timesConsumed = 0;
+        this.processingTime = 0;
+        this.state = ThreadState.IDLE;
     }
 
     @Override
     public void run() {
         try {
-            Thread.sleep(startDelay); // Delay inicial
-        } catch (InterruptedException e) {
-            return;
-        }
+            startTime = LocalTime.now();
+            Thread.sleep(startDelay);
+            long startProcessing = System.currentTimeMillis();
+            state = ThreadState.RUNNING;
 
-        while (!isInterrupted()) {
-            try {
-                Thread.sleep(delay);
+            while (state != ThreadState.STOPPED) {
+                synchronized (this) {
+                    while (state == ThreadState.PAUSED) {
+                        wait();
+                    }
+                }
+
+                if(state == ThreadState.STOPPED) break;
+
+
+                Thread.sleep(consumeDelay);
                 resourceType.consumeResource();
-            } catch (InterruptedException e) {
-                System.out.println("Consumer detenido.");
-                return; // Salir del hilo si se interrumpe
+                timesConsumed++;
+                processingTime = System.currentTimeMillis() - startProcessing;
             }
+
+            endTime = LocalTime.now();
+        } catch (InterruptedException e) {
+            state = ThreadState.STOPPED;
         }
     }
 
+    public synchronized void setState(ThreadState newState) {
+        this.state = newState;
+        notifyAll();
+    }
+
+    public synchronized ThreadState getThreadState() {
+        return state;
+    }
+
+    public Integer[] getConsumerInfo() {
+        return new Integer[]{
+                id,
+                resourceType.getResourceID(),
+                startDelay,
+                consumeDelay,
+                timesConsumed,
+                (int) processingTime,
+                startTime.getHour() * 10000 + startTime.getMinute() * 100 + startTime.getSecond(),
+                (endTime != null) ? (endTime.getHour() * 10000 + endTime.getMinute() * 100 + endTime.getSecond()) : 0
+        };
+    }
 }
+
 
 
 

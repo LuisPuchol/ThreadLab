@@ -54,36 +54,36 @@ public class Model {
      * Inicializa los recursos compartidos y crea los hilos de productores y consumidores.
      */
     public void play() {
+        // Resetear las ArrayList
         resourceTypes = new ArrayList<>();
         ResourceType.resetIdCounter();
         producers = new ArrayList<>();
         consumers = new ArrayList<>();
 
 
-        // Crear los ResourceType según totalResources
+        // ResourceTypes
         for (int i = 0; i < totalResources; i++) {
             resourceTypes.add(new ResourceType(minGeneralResources, maxGeneralResources));
         }
 
-        // Calcular delays promediados al crear cada productor y consumidor
-        int avgProducerDelay = (producerDelayMin + producerDelayMax) / 2;
-        int avgConsumerDelay = (consumerDelayMin + consumerDelayMax) / 2;
 
-        // Crear y lanzar productores con un delay inicial aleatorio
+        // Producers
         for (int i = 0; i < numberOfProducers; i++) {
             ResourceType assignedResource = resourceTypes.get(random.nextInt(resourceTypes.size()));
             int startDelay = startDelayMin + random.nextInt(startDelayMax - startDelayMin + 1);
-            Producer producer = new Producer(this, assignedResource, avgProducerDelay, startDelay);
+            int produceDelay = producerDelayMin + random.nextInt(producerDelayMax - producerDelayMin + 1);
+            Producer producer = new Producer(this, assignedResource, produceDelay, startDelay);
             assignedResource.addProducer();
             producers.add(producer);
             producer.start();
         }
 
-        // Crear y lanzar consumidores con un delay inicial aleatorio
+        // Consumers
         for (int i = 0; i < numberOfConsumers; i++) {
             ResourceType assignedResource = resourceTypes.get(random.nextInt(resourceTypes.size()));
             int startDelay = startDelayMin + random.nextInt(startDelayMax - startDelayMin + 1);
-            Consumer consumer = new Consumer(this, assignedResource, avgConsumerDelay, startDelay);
+            int consumeDelay = consumerDelayMin + random.nextInt(consumerDelayMax - consumerDelayMin + 1);
+            Consumer consumer = new Consumer(this, assignedResource, consumeDelay, startDelay);
             consumers.add(consumer);
             assignedResource.addConsumer();
             consumer.start();
@@ -105,20 +105,39 @@ public class Model {
         };
     }
 
+    /**
+     * Si estan running los pausa, si estan en pausa los reanuda
+     */
+    public void pause() {
+        if (!producers.isEmpty() && producers.get(0).getThreadState() == ThreadState.RUNNING) {
+            for (Producer producer : producers) {
+                producer.setState(ThreadState.PAUSED);
+            }
+            for (Consumer consumer : consumers) {
+                consumer.setState(ThreadState.PAUSED);
+            }
+            System.out.println("Simulación pausada.");
+        } else {
+            for (Producer producer : producers) {
+                producer.setState(ThreadState.RUNNING);
+            }
+            for (Consumer consumer : consumers) {
+                consumer.setState(ThreadState.RUNNING);
+            }
+            System.out.println("Simulación reanudada.");
+        }
+    }
+
+    /**
+     * Pausa la simulación, pero no la reinicia, eso se hace al principio del start
+     */
     public void stop() {
-        System.out.println("Deteniendo todos los procesos...");
-
-        // Interrumpir todos los productores
         for (Producer producer : producers) {
-            producer.interrupt();
+            producer.setState(ThreadState.STOPPED);
         }
-
-        // Interrumpir todos los consumidores
         for (Consumer consumer : consumers) {
-            consumer.interrupt();
+            consumer.setState(ThreadState.STOPPED);
         }
-
-        System.out.println("Todos los procesos han sido detenidos.");
     }
 
 
@@ -129,7 +148,7 @@ public class Model {
         return resourceTypes.stream().mapToInt(ResourceType::getCurrentQuantity).sum();
     }
 
-    public List<Integer[]> getResourceTypeInfo() {
+    public List<Integer[]> getResourceTypeData() {
         List<Integer[]> resourceInfo = new ArrayList<>();
         for (ResourceType resource : resourceTypes) {
             resourceInfo.add(resource.getResourceInfo());
@@ -137,9 +156,27 @@ public class Model {
         return resourceInfo;
     }
 
+    public List<Integer[]> getProducerData() {
+        List<Integer[]> producerData = new ArrayList<>();
+        for (Producer producer : producers) {
+            producerData.add(producer.getProducerInfo());
+        }
+        return producerData;
+    }
 
+    public List<Integer[]> getConsumerData() {
+        List<Integer[]> consumerData = new ArrayList<>();
+        for (Consumer consumer : consumers) {
+            consumerData.add(consumer.getConsumerInfo());
+        }
+        return consumerData;
+    }
+
+    /**
+     * -4, 3 del Swing y 1 del propio main
+     */
     public int getActiveThreads() {
-        return (int) (Thread.activeCount() - 4); // -4, 3 del Swing y 1 del propio main
+        return (int) (Thread.activeCount() - 4);
     }
 
     public int getProcessingTime() {

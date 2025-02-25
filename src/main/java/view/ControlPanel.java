@@ -1,51 +1,41 @@
 package view;
 
 import javax.swing.*;
-import java.awt.*;
 
 public class ControlPanel extends JPanel{
     private JPanel buttonPanel;
     private ButtonPlay buttonPlay;
     private ButtonStop buttonStop;
-    private ButtonCanvaThreat buttonCanvaThreat;
-    private Viewer canvas;
+    private ButtonPause buttonPause;
 
     public ControlPanel() {
         System.out.println("Controls creado");
 
         buttonPlay = new ButtonPlay();
         buttonStop = new ButtonStop();
-        buttonCanvaThreat = new ButtonCanvaThreat();
+        buttonPause = new ButtonPause();
 
         buttonPanel = new JPanel();
 
         buttonPanel.add(buttonPlay.getButtonPlay());
         buttonPanel.add(buttonStop.getButtonStop());
-        buttonPanel.add(buttonCanvaThreat.getButtonCanvaThreat());
+        buttonPanel.add(buttonPause.getButtonCanvaThreat());
     }
 
     public JPanel getButtonPanel() {
         return buttonPanel;
     }
 
-    public JButton getButtonOK() {
+    public JButton getButtonPlay() {
         return buttonPlay.getButtonPlay();
     }
 
-    public JButton getButtonCancel() {
+    public JButton getButtonStop() {
         return buttonStop.getButtonStop();
     }
 
-    public JButton getButtonCanva() {
-        return buttonCanvaThreat.getButtonCanvaThreat();
-    }
-
-    public Canvas getCanvas() {
-        return canvas.getCanvas();
-    }
-
-    public void setButtonPanel(JPanel buttonPanel) {
-        this.buttonPanel = buttonPanel;
+    public JButton getButtonPause() {
+        return buttonPause.getButtonCanvaThreat();
     }
 
 }
