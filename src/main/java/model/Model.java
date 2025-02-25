@@ -10,7 +10,7 @@ public class Model {
     private Controller controller;
     private List<Producer> producers;
     private List<Consumer> consumers;
-    private List<ResourceType> resourceTypes; // Lista de ResourceType según totalResources
+    private List<ResourceType> resourceTypes;
 
     private int totalResources;
     private int maxGeneralResources;
@@ -54,9 +54,11 @@ public class Model {
      * Inicializa los recursos compartidos y crea los hilos de productores y consumidores.
      */
     public void play() {
-        resourceTypes.clear();
-        producers.clear();
-        consumers.clear();
+        resourceTypes = new ArrayList<>();
+        ResourceType.resetIdCounter();
+        producers = new ArrayList<>();
+        consumers = new ArrayList<>();
+
 
         // Crear los ResourceType según totalResources
         for (int i = 0; i < totalResources; i++) {
@@ -72,6 +74,7 @@ public class Model {
             ResourceType assignedResource = resourceTypes.get(random.nextInt(resourceTypes.size()));
             int startDelay = startDelayMin + random.nextInt(startDelayMax - startDelayMin + 1);
             Producer producer = new Producer(this, assignedResource, avgProducerDelay, startDelay);
+            assignedResource.addProducer();
             producers.add(producer);
             producer.start();
         }
@@ -82,6 +85,7 @@ public class Model {
             int startDelay = startDelayMin + random.nextInt(startDelayMax - startDelayMin + 1);
             Consumer consumer = new Consumer(this, assignedResource, avgConsumerDelay, startDelay);
             consumers.add(consumer);
+            assignedResource.addConsumer();
             consumer.start();
         }
     }
@@ -114,10 +118,6 @@ public class Model {
             consumer.interrupt();
         }
 
-        // Limpiar listas
-        producers.clear();
-        consumers.clear();
-
         System.out.println("Todos los procesos han sido detenidos.");
     }
 
@@ -126,15 +126,25 @@ public class Model {
      * Métodos auxiliares para obtener estadísticas.
      */
     public int getTotalResourceQuantity() {
-        return resourceTypes.stream().mapToInt(ResourceType::getQuantity).sum();
+        return resourceTypes.stream().mapToInt(ResourceType::getCurrentQuantity).sum();
     }
 
+    public List<Integer[]> getResourceTypeInfo() {
+        List<Integer[]> resourceInfo = new ArrayList<>();
+        for (ResourceType resource : resourceTypes) {
+            resourceInfo.add(resource.getResourceInfo());
+        }
+        return resourceInfo;
+    }
+
+
     public int getActiveThreads() {
-        return (int) (Thread.activeCount() - 1);
+        return (int) (Thread.activeCount() - 4); // -4, 3 del Swing y 1 del propio main
     }
 
     public int getProcessingTime() {
-        return 0; // Se puede implementar posteriormente
+        // cuando se de a stop calcular tiempo
+        return 0;
     }
 
     public int getIdleThreads() {

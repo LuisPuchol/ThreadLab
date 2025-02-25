@@ -27,11 +27,7 @@ public class Consumer extends Thread {
         while (!isInterrupted()) {
             try {
                 Thread.sleep(delay);
-                if (resourceType.consumeResource()) {
-                    System.out.println("Consumer consumió 1 unidad. Total: " + resourceType.getQuantity());
-                } else {
-                    System.out.println("Consumer intentó consumir, pero no hay recursos disponibles.");
-                }
+                resourceType.consumeResource();
             } catch (InterruptedException e) {
                 System.out.println("Consumer detenido.");
                 return; // Salir del hilo si se interrumpe

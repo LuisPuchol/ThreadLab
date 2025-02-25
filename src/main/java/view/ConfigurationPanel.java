@@ -18,8 +18,8 @@ public class ConfigurationPanel extends JPanel {
         Object[][] data = {
                 {".Resource Type Settings", "---"},
                 {"Total Resources", 5},
-                {"Max General Resources", 1000},
                 {"Min General Resources", 100},
+                {"Max General Resources", 1000},
                 {".Producer/Consumer Count", "---"},
                 {"Number of Producers", 5},
                 {"Number of Consumers", 5},
@@ -95,11 +95,11 @@ public class ConfigurationPanel extends JPanel {
                 case "Total Resources":
                     configDTO.setTotalResources(value);
                     break;
-                case "Max General Resources":
-                    configDTO.setMaxGeneralResources(value);
-                    break;
                 case "Min General Resources":
                     configDTO.setMinGeneralResources(value);
+                    break;
+                case "Max General Resources":
+                    configDTO.setMaxGeneralResources(value);
                     break;
                 case "Number of Producers":
                     configDTO.setNumberOfProducers(value);

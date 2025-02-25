@@ -29,8 +29,7 @@ public class Producer extends Thread {
         while (!isInterrupted()) {
             try {
                 Thread.sleep(delay);
-                resourceType.addResources();
-                System.out.println("Producer produjo 1 unidad. Total: " + resourceType.getQuantity());
+                resourceType.addResource();
             } catch (InterruptedException e) {
                 System.out.println("Producer detenido.");
                 return; // Salir del hilo si se interrumpe

@@ -6,6 +6,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public class View extends JFrame implements ActionListener, Runnable {
     private ControlPanel controlPanel;
@@ -146,18 +149,20 @@ public class View extends JFrame implements ActionListener, Runnable {
             try {
                 // Obtener la información actualizada
                 Object[] updatedData  = controller.getCurrentData();
+                List<Integer[]> resourcesData = controller.getResourcesData();
 
                 // Actualizar la tabla en el hilo de la interfaz gráfica
                 if (updatedData != null) {
                     SwingUtilities.invokeLater(() -> {
                         dataPanel.updateValues(updatedData);  // Sobrescribir la segunda columna
+                        resourcesPanel.updateTable(resourcesData);
                     });
                 }
 
                 System.out.println("bucle en marcha");
 
                 // Esperar 1 segundo antes de la siguiente actualización
-                Thread.sleep(1000);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 break;  // Salir del bucle si el hilo es interrumpido
@@ -167,5 +172,9 @@ public class View extends JFrame implements ActionListener, Runnable {
 
     public ConfigurationPanel getConfigurationPanel() {
         return configurationPanel;
+    }
+
+    public void updateTable(List<Integer[]> resourceInfo) {
+        resourcesPanel.updateTable(resourceInfo);
     }
 }

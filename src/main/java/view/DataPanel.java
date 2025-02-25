@@ -56,10 +56,6 @@ public class DataPanel extends JPanel {
     }
 
     public void updateValues(Object[] newValues) {
-        if (newValues.length != model.getRowCount()) {
-            throw new IllegalArgumentException("El tamaño de los datos no coincide con las filas de la tabla.");
-        }
-
         for (int i = 0; i < newValues.length; i++) {
             model.setValueAt(newValues[i], i, 1);
         }

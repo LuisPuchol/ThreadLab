@@ -2,6 +2,7 @@ package view;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.util.List;
 
 public class ResourcesPanel {
     private JTable dataTable;
@@ -10,16 +11,27 @@ public class ResourcesPanel {
     private DefaultTableModel tableModel;
 
     public ResourcesPanel() {
-        String[] columnNames = {"Atributo","Valor"};
+        // Definir las columnas de la tabla
+        String[] columnNames = {
+                "Resource ID", "Current QTY", "Min QTY", "Max QTY",
+                "Producers", "Consumers", "Underflow Count", "Overflow Count"
+        };
 
-        // Inicializar el modelo con las columnas y datos iniciales
-        tableModel = new DefaultTableModel(columnNames, 0); // 0 filas iniciales
+        // Inicializar el modelo de la tabla con 0 filas iniciales
+        tableModel = new DefaultTableModel(columnNames, 0);
 
         // Configurar la JTable con el modelo
         dataTable = new JTable(tableModel);
 
         // Agregar la tabla a un JScrollPane
         dataScroll = new JScrollPane(dataTable);
+    }
+
+    public void updateTable(List<Integer[]> resourceData) {
+        tableModel.setRowCount(0); // Limpiar la tabla antes de actualizarla
+        for (Integer[] data : resourceData) {
+            tableModel.addRow(data); // Agregar cada recurso como una fila
+        }
     }
 
     public JTable getDataTable() {

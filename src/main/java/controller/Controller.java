@@ -5,7 +5,10 @@ import model.Model;
 import model.ResourceType;
 import view.View;
 
-import javax.swing.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.awt.*;
 
 public class Controller {
@@ -22,6 +25,10 @@ public class Controller {
         ConfigurationPropertiesDTO configDTO = view.getConfigurationPanel().toConfigurationPropertiesDTO();
         model.applyConfiguration(configDTO);
         model.play();
+    }
+
+    public List<Integer[]> getResourcesData() {
+        return model.getResourceTypeInfo();
     }
 
 
